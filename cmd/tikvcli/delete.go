@@ -1,21 +1,19 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/ieooo/tikv-cli/pkg/client"
 	"github.com/spf13/cobra"
 )
 
-var GetCommand = &cobra.Command{
-	Use:              "get",
-	Short:            "get value by key from tikv",
+var DeleteCommand = &cobra.Command{
+	Use:              "delete",
+	Short:            "delete key value",
 	SilenceUsage:     true,
-	Run:              get,
+	Run:              delete,
 	PersistentPreRun: initConfig,
 }
 
-func get(cmd *cobra.Command, args []string) {
+func delete(cmd *cobra.Command, args []string) {
 	if len(args) < 1 {
 		errorExit("lack argument\n")
 	}
@@ -25,11 +23,9 @@ func get(cmd *cobra.Command, args []string) {
 	if err != nil {
 		errorExit("client error:%v\n", err)
 	}
-	defer cli.Close()
+	cli.Close()
 
-	b, err := cli.Get(cmd.Context(), []byte(key))
-	if err != nil {
-		fmt.Println(err)
+	if err := cli.Delete(cmd.Context(), []byte(key)); err != nil {
+		errorExit("delete error:%v\n", err)
 	}
-	fmt.Println(string(b))
 }

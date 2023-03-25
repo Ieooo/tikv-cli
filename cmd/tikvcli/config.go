@@ -108,7 +108,7 @@ func removeConfig(cmd *cobra.Command, args []string) {
 		c.CurrentTikv = ""
 	}
 
-	c.Tikvs = append(c.Tikvs[:index], c.Tikvs[index:]...)
+	c.Tikvs = append(c.Tikvs[:index], c.Tikvs[index+1:]...)
 
 	if err := c.Save(); err != nil {
 		errorExit("save config:%v\n", err)

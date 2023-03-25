@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/ieooo/tikv-cli/pkg/config"
+	plog "github.com/pingcap/log"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +26,9 @@ func init() {
 	rootCmd.AddCommand(GetCommand)
 	rootCmd.AddCommand(PutCommand)
 	rootCmd.AddCommand(ScanCommand)
+	rootCmd.AddCommand(DeleteCommand)
 
+	ignoreTikvLog()
 }
 
 func main() {
@@ -35,10 +38,10 @@ func main() {
 	}
 }
 
-func initConfig() error {
+func initConfig(cmd *cobra.Command, args []string) {
 	c := new(config.Config)
 	if err := c.Load(); err != nil {
-		return err
+		errorExit("load config err:%v\n", err)
 	}
 
 	if c.CurrentTikv == "" {
@@ -49,10 +52,16 @@ func initConfig() error {
 			conf = v
 		}
 	}
-	return nil
 }
 
 func errorExit(format string, a ...any) {
 	fmt.Printf(format, a...)
 	os.Exit(1)
+}
+
+// ignore tikv log
+func ignoreTikvLog() {
+	conf := &plog.Config{Level: "error", File: plog.FileLogConfig{Filename: "/dev/null"}}
+	log, p, _ := plog.InitLogger(conf)
+	plog.ReplaceGlobals(log, p)
 }
