@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/ieooo/tikv-cli/pkg/client"
@@ -13,6 +12,7 @@ var (
 	startKey string
 	endKey   string
 	limit    uint32
+	reverse  bool
 )
 
 var ScanCommand = &cobra.Command{
@@ -21,6 +21,10 @@ var ScanCommand = &cobra.Command{
 	SilenceUsage:     true,
 	Run:              scan,
 	PersistentPreRun: initConfig,
+}
+
+func init() {
+	ScanCommand.Flags().BoolVarP(&reverse, "reverse", "r", false, "reverse scan")
 }
 
 func init() {
@@ -40,9 +44,17 @@ func scan(cmd *cobra.Command, args []string) {
 		errorExit("limit count is too large\n")
 	}
 
-	keys, values, err := cli.Scan(context.TODO(), []byte(startKey), []byte(endKey), int(limit))
-	if err != nil {
-		fmt.Println(err)
+	var keys, values [][]byte
+	if reverse {
+		keys, values, err = cli.ReverseScan(cmd.Context(), []byte(startKey), []byte(endKey), int(limit))
+		if err != nil {
+			errorExit("scan error:%v\n", err)
+		}
+	} else {
+		keys, values, err = cli.Scan(cmd.Context(), []byte(startKey), []byte(endKey), int(limit))
+		if err != nil {
+			errorExit("scan error:%v\n", err)
+		}
 	}
 	for i := range keys {
 		fmt.Println(string(keys[i]), string(values[i]))

@@ -3,14 +3,17 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	cmd "github.com/ieooo/tikv-cli/cmd/tikvcli"
 	plog "github.com/pingcap/log"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
 )
 
 var (
 	version string = "latest"
+	commit  string = "HEAD"
 )
 
 var rootCmd = &cobra.Command{
@@ -26,13 +29,22 @@ func init() {
 	rootCmd.AddCommand(cmd.PutCommand)
 	rootCmd.AddCommand(cmd.ScanCommand)
 	rootCmd.AddCommand(cmd.DeleteCommand)
+	rootCmd.AddCommand(cmd.PutTTLCommand)
+	rootCmd.AddCommand(cmd.GetTTLCommand)
 
 	ignoreTikvLog()
 }
 
 func main() {
+	if version == "" {
+		rootCmd.Version = commit
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	rootCmd.SetContext(ctx)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
+		cancel()
 		os.Exit(1)
 	}
 }

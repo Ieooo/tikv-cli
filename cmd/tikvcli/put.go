@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/ieooo/tikv-cli/pkg/client"
@@ -17,10 +16,19 @@ var PutCommand = &cobra.Command{
 }
 
 func put(cmd *cobra.Command, args []string) {
-	if len(args) < 2 {
+	if len(args) < 2 || len(args)%2 != 0 {
 		errorExit("lack arguments\n")
 	}
-	key, value := args[0], args[1]
+
+	keys := make([][]byte, (len(args) / 2))
+	values := make([][]byte, (len(args) / 2))
+	for i := range args {
+		if i%2 == 0 {
+			keys[i/2] = []byte(args[i])
+		} else {
+			values[i/2] = []byte(args[i])
+		}
+	}
 
 	cli, err := client.NewTikvClient(cmd.Context(), conf)
 	if err != nil {
@@ -28,8 +36,11 @@ func put(cmd *cobra.Command, args []string) {
 	}
 	defer cli.Close()
 
-	if err := cli.Put(context.TODO(), []byte(key), []byte(value)); err != nil {
+	if err := cli.BatchPut(cmd.Context(), keys, values); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(string(key), string(value))
+
+	for i := range keys {
+		fmt.Printf("%s:%s\n", keys[i], values[i])
+	}
 }
