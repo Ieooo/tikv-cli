@@ -52,12 +52,29 @@ func init() {
 }
 
 func addConfig(cmd *cobra.Command, args []string) {
-	if len(args) < 2 {
+	if len(args) < 1 {
 		errorExit("lack argument")
 	}
+
 	name := args[0]
 
-	address := args[1]
+	var address string
+	var verfycn string
+	var security config.Security
+	fmt.Print("pd address:")
+	fmt.Scan(&address)
+	fmt.Print("SSLCA:")
+	fmt.Scan(&security.ClusterSSLCA)
+	fmt.Print("SSLCert:")
+	fmt.Scan(&security.ClusterSSLCert)
+	fmt.Print("SSLKey:")
+	fmt.Scan(&security.ClusterSSLKey)
+	fmt.Print("VerifyCN:")
+	fmt.Scan(&verfycn)
+
+	addresses := strings.Split(address, ",")
+	verfycnArr := strings.Split(verfycn, ",")
+	security.ClusterVerifyCN = verfycnArr
 
 	c := new(config.Config)
 	if err := c.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -70,11 +87,10 @@ func addConfig(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	addresses := strings.Split(address, ",")
 	c.Tikvs = append(c.Tikvs, config.TikvConfig{
 		Name:     name,
 		Address:  addresses,
-		Security: config.Security{},
+		Security: security,
 	})
 
 	if err := c.Save(); err != nil {
