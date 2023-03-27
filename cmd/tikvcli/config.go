@@ -62,19 +62,21 @@ func addConfig(cmd *cobra.Command, args []string) {
 	var verfycn string
 	var security config.Security
 	fmt.Print("pd address:")
-	fmt.Scan(&address)
+	fmt.Scanln(&address)
 	fmt.Print("SSLCA:")
-	fmt.Scan(&security.ClusterSSLCA)
+	fmt.Scanln(&security.ClusterSSLCA)
 	fmt.Print("SSLCert:")
-	fmt.Scan(&security.ClusterSSLCert)
+	fmt.Scanln(&security.ClusterSSLCert)
 	fmt.Print("SSLKey:")
-	fmt.Scan(&security.ClusterSSLKey)
+	fmt.Scanln(&security.ClusterSSLKey)
 	fmt.Print("VerifyCN:")
-	fmt.Scan(&verfycn)
+	fmt.Scanln(&verfycn)
 
 	addresses := strings.Split(address, ",")
-	verfycnArr := strings.Split(verfycn, ",")
-	security.ClusterVerifyCN = verfycnArr
+	if verfycn != "" {
+		verfycnArr := strings.Split(verfycn, ",")
+		security.ClusterVerifyCN = verfycnArr
+	}
 
 	c := new(config.Config)
 	if err := c.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {

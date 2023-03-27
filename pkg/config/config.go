@@ -18,9 +18,9 @@ type Config struct {
 }
 
 type TikvConfig struct {
-	Name     string   `yaml:"name"`
-	Address  []string `yaml:"address"`
-	Security Security `yaml:"security"`
+	Name     string   `yaml:"name,omitempty"`
+	Address  []string `yaml:"address,omitempty"`
+	Security Security `yaml:"security,omitempty"`
 }
 
 type Security struct {
